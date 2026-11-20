@@ -1,0 +1,595 @@
+@import "tailwindcss";
+
+/* ---- カラースキーム（modern-web-guidance: dark-mode / dark-mode-toggle） ----
+   基底は必ず `light dark`（システム追従）。手動上書きは <meta name="color-scheme"> が担い、
+   :has() で CSS の color-scheme に写すことで light-dark() と連動させる。 */
+:root {
+  color-scheme: light dark;
+
+  &:has(> head > meta[name="color-scheme"][content="dark"]) {
+    color-scheme: dark;
+  }
+  &:has(> head > meta[name="color-scheme"][content="light"]) {
+    color-scheme: light;
+  }
+
+  --bg: light-dark(#f7f8fa, #0d1420);
+  --surface: light-dark(#ffffff, #16202f);
+  --ink: light-dark(#17233b, #e8eef7);
+  --muted: light-dark(#5a6a84, #9db0c9);
+  --line: light-dark(#dbe2ee, #263650);
+  --accent: light-dark(#1d6fd1, #5ea2ef);
+  --accent-ink: light-dark(#ffffff, #0d1420);
+}
+
+/* 言語切り替えなどページ遷移時のクロスフェード（控えめに） */
+@view-transition {
+  navigation: auto;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), "Hiragino Kaku Gothic ProN", sans-serif;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ---- レイアウト ---- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.header-inner {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.brand {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.section-nav {
+  display: flex;
+  gap: 1.25rem;
+  margin-inline-start: auto;
+}
+
+.section-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.section-nav a:hover {
+  color: var(--accent);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.locale-switch {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.locale-switch a {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 0.35rem 0.25rem;
+}
+
+.locale-switch a.is-active {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
+}
+
+.theme-toggle:active {
+  transform: scale(0.94);
+}
+
+/* テーマアイコン：現在の見た目と反対の行き先を1つだけ出す。
+   判定は color-scheme の実効値に合わせ、meta 上書きとシステム設定の両方を見る。 */
+.theme-toggle .icon-sun,
+.theme-toggle .icon-moon {
+  display: none;
+}
+
+/* ライト表示中 → 月（ダークへ） */
+:root:not(:has(> head > meta[name="color-scheme"][content="dark"])) .theme-toggle .icon-moon {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not(:has(> head > meta[name="color-scheme"][content="light"])) .theme-toggle .icon-moon {
+    display: none;
+  }
+  :root:not(:has(> head > meta[name="color-scheme"][content="light"])) .theme-toggle .icon-sun {
+    display: block;
+  }
+}
+/* ダーク固定中 → 太陽（ライトへ） */
+:root:has(> head > meta[name="color-scheme"][content="dark"]) .theme-toggle .icon-sun {
+  display: block;
+}
+:root:has(> head > meta[name="color-scheme"][content="dark"]) .theme-toggle .icon-moon {
+  display: none;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0.5rem 1rem;
+  z-index: 20;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+main {
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+/* ---- Hero ---- */
+.hero {
+  padding: 4.5rem 0 3.5rem;
+  /* 青写真のような細グリッド（エンジニアらしさのアクセント） */
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 44px 44px;
+  background-position: center top;
+  mask-image: linear-gradient(to bottom, black 55%, transparent 98%);
+}
+
+.hero-grid {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 48rem) {
+  .hero-grid {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.avatar {
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  box-shadow: 10px 10px 0 0 color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.hero-name {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(3.5rem, 11vw, 6.5rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+
+.hero-role {
+  font-family: var(--font-mono), monospace;
+  color: var(--accent);
+  font-size: clamp(1rem, 3vw, 1.3rem);
+  margin-top: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cursor {
+  width: 0.55em;
+  height: 1.05em;
+  background: var(--accent);
+  opacity: 0.75;
+}
+
+.hero-tagline {
+  font-size: clamp(1.05rem, 2.6vw, 1.3rem);
+  margin-top: 1.25rem;
+  max-width: 38rem;
+  text-wrap: balance;
+}
+
+.hero-meta {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.75rem;
+}
+
+.hero-meta li {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.8rem;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  color: var(--muted);
+}
+
+.hero-links {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.button-ghost {
+  display: inline-block;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.65rem 1.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.button-ghost:hover {
+  border-color: var(--accent);
+}
+
+.button-ghost:active {
+  transform: scale(0.97);
+}
+
+.button {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration: none;
+  font-weight: 700;
+  padding: 0.65rem 1.6rem;
+  border-radius: 999px;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+/* ---- セクション共通 ---- */
+.section {
+  padding: 2.75rem 0;
+  border-top: 1px solid var(--line);
+  container-type: inline-size;
+}
+
+.section-heading {
+  margin-bottom: 1.5rem;
+}
+
+.kicker {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+.section h2 {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  text-wrap: balance;
+}
+
+/* スクロール出現（控えめ）。隠し状態は JS が is-armed を付けた場合だけ有効にし、
+   JS が動かない環境でも内容が読めるようにする。 */
+.reveal {
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.is-armed {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.reveal.is-armed.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.body-text {
+  color: var(--ink);
+  max-width: 44rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.5rem;
+  height: 100%;
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+}
+
+.career-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.career-ghost {
+  position: absolute;
+  top: -1.2rem;
+  right: 0.4rem;
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: 6.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--accent) 10%, transparent);
+  pointer-events: none;
+}
+
+.card h3 {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.card h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.card h3 a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+/* グリッドはコンテナ（セクション幅）に応じて列数を変える */
+.skills-grid,
+.projects-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@container (min-width: 36rem) {
+  .skills-grid,
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 56rem) {
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.skill-list {
+  list-style: none;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.skill-name {
+  display: block;
+  font-weight: 700;
+}
+
+.skill-note {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ---- Career ---- */
+.career-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@container (min-width: 36rem) {
+  .career-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.career-years {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.years-number {
+  font-size: 2.75rem;
+  font-weight: 700;
+}
+
+.years-unit {
+  font-size: 1.1rem;
+  margin-inline-start: 0.25rem;
+}
+
+/* ---- Certifications ---- */
+.cert-list {
+  list-style: none;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.cert-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.cert-name {
+  font-weight: 700;
+}
+
+.cert-status {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* ---- Projects ---- */
+.tech-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.tech-list li {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  color: var(--muted);
+}
+
+/* ---- Footer ---- */
+.site-footer {
+  border-top: 1px solid var(--line);
+  max-width: 64rem;
+  margin-inline: auto;
+  padding: 2.5rem 1.25rem 3rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.site-footer a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-wordmark {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  font-weight: 700;
+  line-height: 1;
+  color: color-mix(in srgb, var(--ink) 14%, transparent);
+  margin-bottom: 1rem;
+  user-select: none;
+}
+
+.footer-note,
+.footer-copy {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* ---- モーション配慮 ---- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .theme-toggle,
+  .button,
+  .button-ghost,
+  .card,
+  .reveal {
+    transition: none;
+  }
+  .reveal.is-armed {
+    opacity: 1;
+    transform: none;
+  }
+  .card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 40rem) {
+  .section-nav {
+    display: none;
+  }
+}
