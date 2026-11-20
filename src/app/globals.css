@@ -20,11 +20,81 @@
   --line: light-dark(#dbe2ee, #263650);
   --accent: light-dark(#1d6fd1, #5ea2ef);
   --accent-ink: light-dark(#ffffff, #0d1420);
+
+  /* ---- モーション設計（motion-design-skill: Corporate パーソナリティ） ----
+     Signature easing は MD3 標準 (0.2,0,0,1)。入場は MD3 Emphasized。
+     Duration パレット: quick 150ms / standard 300ms / slow 550ms。 */
+  --ease-signature: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --dur-quick: 150ms;
+  --dur-standard: 300ms;
+  --dur-slow: 550ms;
 }
 
-/* 言語切り替えなどページ遷移時のクロスフェード（控えめに） */
+/* 言語切り替えなどページ遷移時のクロスフェード（ページ遷移 400-600ms の下限寄り） */
 @view-transition {
   navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 380ms;
+  animation-timing-function: var(--ease-signature);
+}
+
+/* ---- 入場の振り付け（Hero） ----
+   原則: 20px 下から decelerate で着地（Card Entrance レシピ）。
+   遅延は --d で段差を付け、全体の stagger は 500ms 以内に収める。
+   初期の隠し状態は「動きを許容する環境」でのみ有効にする。 */
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    opacity: 0;
+    animation: enter-rise 600ms var(--ease-enter) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes enter-rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* アバターは scale を伴う入場（主役の staging） */
+  .enter-avatar {
+    opacity: 0;
+    animation: enter-avatar 650ms var(--ease-enter) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes enter-avatar {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Hero のカーソルブロックは ambient 層として静かに脈動する */
+  .cursor {
+    animation: cursor-pulse 1.7s ease-in-out infinite alternate;
+  }
+
+  @keyframes cursor-pulse {
+    from {
+      opacity: 0.75;
+    }
+    to {
+      opacity: 0.25;
+    }
+  }
 }
 
 html {
@@ -88,10 +158,30 @@ body {
   color: var(--muted);
   text-decoration: none;
   font-size: 0.9rem;
+  position: relative;
+  transition: color var(--dur-quick) var(--ease-signature);
+}
+
+/* 下線は左から滑り込む（ホバー反応は 100ms 未満で開始） */
+.section-nav a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms var(--ease-signature);
 }
 
 .section-nav a:hover {
   color: var(--accent);
+}
+
+.section-nav a:hover::after {
+  transform: scaleX(1);
 }
 
 .header-actions {
@@ -131,15 +221,35 @@ body {
   background: var(--surface);
   color: var(--ink);
   cursor: pointer;
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition:
+    transform var(--dur-quick) var(--ease-signature),
+    border-color var(--dur-quick) var(--ease-signature);
 }
 
 .theme-toggle:hover {
   border-color: var(--accent);
 }
 
+/* 押下は anticipation を兼ねた素早い縮小、離すと signature で settle する */
 .theme-toggle:active {
   transform: scale(0.94);
+  transition-duration: 80ms;
+}
+
+/* アイコンの切り替わりは回転＋scale の小さな入場で見せる（150-250ms 帯） */
+.theme-toggle svg {
+  animation: icon-in 220ms var(--ease-enter);
+}
+
+@keyframes icon-in {
+  from {
+    opacity: 0;
+    transform: rotate(-50deg) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* テーマアイコン：現在の見た目と反対の行き先を1つだけ出す。
@@ -295,7 +405,9 @@ main {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
-  transition: border-color 0.15s ease, transform 0.15s ease;
+  transition:
+    border-color 250ms var(--ease-signature),
+    transform 250ms var(--ease-signature);
 }
 
 .button-ghost:hover {
@@ -304,6 +416,7 @@ main {
 
 .button-ghost:active {
   transform: scale(0.97);
+  transition-duration: 90ms;
 }
 
 .button {
@@ -314,15 +427,25 @@ main {
   font-weight: 700;
   padding: 0.65rem 1.6rem;
   border-radius: 999px;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+  /* 離した後の settle は 200-300ms 帯、影（secondary）は少し遅れて追随する */
+  transition:
+    transform 250ms var(--ease-signature),
+    opacity var(--dur-quick) var(--ease-signature),
+    box-shadow 250ms var(--ease-signature) 40ms;
 }
 
 .button:hover {
-  opacity: 0.9;
+  opacity: 0.92;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 0.16);
 }
 
+/* 押下フィードバックは 150ms 未満で返す */
 .button:active {
   transform: scale(0.97);
+  box-shadow: 0 0 0 rgb(0 0 0 / 0);
+  transition-duration: 90ms, 90ms, 90ms;
+  transition-delay: 0ms;
 }
 
 /* ---- セクション共通 ---- */
@@ -354,12 +477,14 @@ main {
 /* スクロール出現（控えめ）。隠し状態は JS が is-armed を付けた場合だけ有効にし、
    JS が動かない環境でも内容が読めるようにする。 */
 .reveal {
-  transition: opacity 0.55s ease, transform 0.55s ease;
+  transition:
+    opacity var(--dur-slow) var(--ease-enter),
+    transform var(--dur-slow) var(--ease-enter);
 }
 
 .reveal.is-armed {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(20px);
 }
 
 .reveal.is-armed.is-visible {
@@ -379,12 +504,17 @@ main {
   border-radius: 16px;
   padding: 1.5rem;
   height: 100%;
-  transition: transform 0.18s ease, border-color 0.18s ease;
+  /* カードは Paper マテリアル（overshoot なし）。影は follow-through として 50ms 遅れて届く */
+  transition:
+    transform var(--dur-standard) var(--ease-signature),
+    border-color var(--dur-standard) var(--ease-signature),
+    box-shadow var(--dur-standard) var(--ease-signature) 50ms;
 }
 
 .card:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.1);
 }
 
 .career-card {
@@ -585,6 +715,10 @@ main {
   .card,
   .reveal {
     transition: none;
+  }
+  .theme-toggle svg,
+  .cursor {
+    animation: none;
   }
   .reveal.is-armed {
     opacity: 1;

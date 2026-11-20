@@ -51,21 +51,29 @@ export function Hero({ content }: { content: PortfolioContent }) {
       <HeroParticles />
       <div className="hero-grid">
         <div className="hero-text">
-          <h1 className="hero-name">{p.name}</h1>
-          <p className="hero-role">
+          <h1 className="hero-name enter" style={{ "--d": "70ms" } as React.CSSProperties}>
+            {p.name}
+          </h1>
+          <p className="hero-role enter" style={{ "--d": "150ms" } as React.CSSProperties}>
             {p.role}
             <span className="cursor" aria-hidden="true" />
           </p>
-          <p className="hero-tagline">{p.tagline}</p>
+          <p className="hero-tagline enter" style={{ "--d": "230ms" } as React.CSSProperties}>
+            {p.tagline}
+          </p>
           <ul className="hero-meta" aria-label="Experience">
-            {content.career.map((entry) => (
-              <li key={entry.id}>
+            {content.career.map((entry, i) => (
+              <li
+                key={entry.id}
+                className="enter"
+                style={{ "--d": `${310 + i * 40}ms` } as React.CSSProperties}
+              >
                 {entry.area} — {entry.years}
                 {p.ui.years}
               </li>
             ))}
           </ul>
-          <p className="hero-links">
+          <p className="hero-links enter" style={{ "--d": "450ms" } as React.CSSProperties}>
             <a className="button" href={p.githubUrl} target="_blank" rel="noreferrer">
               GitHub
             </a>
@@ -79,7 +87,8 @@ export function Hero({ content }: { content: PortfolioContent }) {
           alt=""
           width={160}
           height={160}
-          className="avatar"
+          className="avatar enter-avatar"
+          style={{ "--d": "0ms" } as React.CSSProperties}
           priority
         />
       </div>
