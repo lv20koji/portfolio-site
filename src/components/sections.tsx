@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { PortfolioContent } from "@/lib/types";
 import { BASE_PATH } from "@/lib/content";
+import HeroParticles from "./HeroParticles";
 import LocaleSwitch from "./LocaleSwitch";
 import ThemeToggle from "./ThemeToggle";
 import Reveal from "./Reveal";
@@ -47,6 +48,7 @@ export function Hero({ content }: { content: PortfolioContent }) {
   const p = content.profile;
   return (
     <section id="top" className="hero">
+      <HeroParticles />
       <div className="hero-grid">
         <div className="hero-text">
           <h1 className="hero-name">{p.name}</h1>

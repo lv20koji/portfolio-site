@@ -192,17 +192,24 @@ main {
 
 /* ---- Hero ---- */
 .hero {
+  position: relative;
+  overflow: hidden;
   padding: 4.5rem 0 3.5rem;
-  /* 青写真のような細グリッド（エンジニアらしさのアクセント） */
-  background-image:
-    linear-gradient(var(--line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 44px 44px;
-  background-position: center top;
-  mask-image: linear-gradient(to bottom, black 55%, transparent 98%);
+}
+
+/* マウスに反応するドットグリッド（canvas）。下端はフェードさせる */
+.hero-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, black 60%, transparent 98%);
 }
 
 .hero-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 2rem;
   align-items: start;

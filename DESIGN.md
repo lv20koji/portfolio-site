@@ -137,7 +137,9 @@ Muse から Copilot CLI に設計書を渡してレビューを受けた。要�
 ### 構築状況（2026-11-21）
 
 - v1 構築完了：テスト 5 件パス、ESLint クリーン、静的ビルド成功（`out/` に `/` と `/en` を出力）
-- 非公開のまま（リポジトリ未作成、Pages 未公開）。プレビュー確認はこれから
+- その後、本人のレビュー指示で v2 に刷新（Hero の大型タイポグラフィ化、セクション見出しのキッカー、カードのホバーと出現演出、Career のゴースト数字、OG／favicon 整備）
+- **公開済み（2026-11-21、本人の指示）：https://lv20koji.github.io/portfolio-site/**（リポジトリ `lv20koji/portfolio-site` は public、Pages は gh-pages ブランチ配信）
+- CI／デプロイ用ワークフローは gh トークンに workflow スコープがなく push できなかったため、`~/workspace/portfolio-site-workflows/` に保管中。`gh auth refresh -s workflow` の後に復帰できる
 
 ## 10. 未確定・要確認
 
